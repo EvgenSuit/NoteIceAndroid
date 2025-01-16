@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,20 +32,22 @@ fun LoadingScreen(
     onRetry: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.fillMaxHeight(0.4f))
         Text(text = stringResource(id = R.string.app_name),
             style = MaterialTheme.typography.titleLarge
         )
+        Spacer(modifier = Modifier.height(150.dp))
         if (notesFetchFailed) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = 150.dp)
             ) {
                 Text(text = stringResource(id = R.string.could_not_fetch_notes),
                     style = MaterialTheme.typography.labelMedium)

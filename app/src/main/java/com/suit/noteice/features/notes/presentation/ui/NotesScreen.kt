@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.suit.noteice.features.auth.presentation.NotesIntent
+import com.suit.noteice.features.notes.presentation.NotesIntent
 import com.suit.noteice.features.notes.presentation.NotesViewModel
 import com.suit.noteice.features.notes.presentation.ui.components.LoadingScreen
 import com.suit.noteice.utils.CustomResult

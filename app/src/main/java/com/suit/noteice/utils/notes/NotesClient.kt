@@ -1,19 +1,15 @@
 package com.suit.noteice.utils.notes
 
 import com.suit.noteice.features.notes.data.Note
-import com.suit.noteice.utils.KtorConstants
+import com.suit.noteice.utils.ktor.KtorConstants
 import com.suit.noteice.utils.notes.data.RefreshTokenRequest
 import com.suit.noteice.utils.notes.data.TokenData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpSend
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
@@ -62,7 +58,7 @@ class NotesClient(
 
     init {
         notesHttpClient.plugin(HttpSend).intercept { request ->
-            val tokens = tokensManager.getSavedTokenData()!!
+            val tokens = tokensManager.getSavedTokenData()
 
             request.headers {
                 append("Authorization", "Bearer ${tokens.accessToken!!}")
@@ -80,6 +76,7 @@ class NotesClient(
                         append("Authorization", "Bearer ${newTokens.accessToken!!}")
                     }
                 } catch (e: Exception) {
+                    tokensManager.clearTokenData()
                     throw TokenRefreshFailed("Token refresh failed: ${e.message}")
                 }
                 execute(request)
@@ -88,7 +85,7 @@ class NotesClient(
     }
 
     suspend fun getNotes(): List<Note>? = withContext(dispatcher) {
-        if (tokensManager.getSavedTokenData() == null) null
+        if (tokensManager.getSavedTokenData() == TokenData()) null
         else notesHttpClient.get("").body<List<Note>>()
     }
 }

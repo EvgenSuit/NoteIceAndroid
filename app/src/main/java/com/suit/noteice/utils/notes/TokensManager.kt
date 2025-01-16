@@ -7,6 +7,7 @@ import androidx.datastore.dataStore
 import com.suit.noteice.utils.notes.data.TokenData
 import com.suit.noteice.utils.notes.data.TokenDataSerializer
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 
 val Context.tokensDataStore by dataStore(
     fileName = "tokens",
@@ -20,11 +21,14 @@ class TokensManager(
             data
         }
     }
-    suspend fun getSavedTokenData(): TokenData? {
+    suspend fun getSavedTokenData(): TokenData {
         return try {
             tokensDataStore.data.first()
         } catch (e: IOException) {
-            null
+            TokenData()
         }
+    }
+    suspend fun clearTokenData() {
+        tokensDataStore.updateData { TokenData() }
     }
 }

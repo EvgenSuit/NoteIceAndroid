@@ -7,9 +7,11 @@ import kotlin.properties.Delegates
 sealed class UIText {
 
     data class StringResource(@StringRes val id: Int, val args: Array<Any> = emptyArray()) : UIText()
+    data class StringValue(val string: String): UIText()
 
     fun toString(context: Context) =
         when (this) {
             is StringResource -> context.getString(id, *args)
+            is StringValue -> string
         }
 }

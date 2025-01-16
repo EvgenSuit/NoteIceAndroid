@@ -17,11 +17,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CommonButton(
     @StringRes textRes: Int,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     colors: ButtonColors = ButtonDefaults.elevatedButtonColors()
 ) {
     ElevatedButton(
         onClick = onClick,
+        enabled = enabled,
         colors = colors,
         modifier = Modifier.defaultMinSize(minWidth = 200.dp, minHeight = 40.dp)) {
         Text(text = stringResource(id = textRes),

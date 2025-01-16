@@ -2,7 +2,6 @@ package com.suit.noteice.features.notes.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.suit.noteice.features.auth.presentation.NotesIntent
 import com.suit.noteice.features.notes.data.Note
 import com.suit.noteice.features.notes.domain.NotesRepository
 import com.suit.noteice.utils.CustomResult

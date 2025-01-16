@@ -2,6 +2,11 @@ package com.suit.noteice.features.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -25,8 +30,8 @@ fun NavManager(
         startDestination = Route.Notes.name,
         navController = navController,
         modifier = modifier,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None }) {
+        enterTransition = { fadeIn() },
+        exitTransition = { ExitTransition.None },) {
         composable(Route.Notes.name) {
             NotesScreen(
                 onNavigateToAuth = {
@@ -37,7 +42,13 @@ fun NavManager(
             )
         }
         composable(Route.Auth.name) {
-            AuthScreen()
+            AuthScreen(
+                onNavigateToNotesScreen = {
+                    navController.navigate(Route.Notes.name) {
+                        popUpTo(navController.graph.id)
+                    }
+                }
+            )
         }
     }
 }
