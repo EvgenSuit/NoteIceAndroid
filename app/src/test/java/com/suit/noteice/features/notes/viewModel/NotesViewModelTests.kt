@@ -4,8 +4,9 @@ import app.cash.turbine.test
 import com.suit.noteice.features.notes.NotesBaseRule
 import com.suit.noteice.setup.DispatcherRule
 import com.suit.noteice.setup.ktor.mockKtorEngine
-import com.suit.noteice.setup.notes.mockTokensManager
+import com.suit.noteice.setup.auth.mockTokensManager
 import com.suit.noteice.utils.CustomResult
+import com.suit.noteice.utils.notes.data.TokenData
 import com.suit.noteice.utils.ui.NotesUIEvent
 import io.ktor.http.HttpStatusCode
 import io.mockk.coVerify
@@ -25,7 +26,7 @@ class NotesViewModelTests {
     fun fetchNotes_noTokensSaved_navigateToAuthEventEmitted() = runTest {
         notesBaseRule.apply {
             setupNotesClient(
-                tokensManager = mockTokensManager(null)
+                tokensManager = mockTokensManager(tokenData = TokenData())
             )
             setupNotesRepository()
             setupViewModel()

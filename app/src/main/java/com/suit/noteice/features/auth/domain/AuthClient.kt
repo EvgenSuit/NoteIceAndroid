@@ -1,15 +1,18 @@
 package com.suit.noteice.features.auth.domain
 
 import com.suit.noteice.features.auth.data.AuthRequest
+import com.suit.noteice.utils.ktor.InputFieldError
 import com.suit.noteice.utils.ktor.InputFieldException
 import com.suit.noteice.utils.ktor.KtorConstants
-import com.suit.noteice.utils.ktor.InputFieldError
-import com.suit.noteice.utils.notes.data.TokenData
 import com.suit.noteice.utils.notes.TokensManager
+import com.suit.noteice.utils.notes.data.TokenData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.RedirectResponseException
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.Logging
@@ -22,6 +25,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.Locale
@@ -29,28 +35,32 @@ import java.util.Locale
 class AuthClient(
     engine: HttpClientEngine,
     private val tokensManager: TokensManager,
-    private val locale: Locale
+    private val locale: Locale,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
+    private val inputFieldErrorEncoder = Json {ignoreUnknownKeys = true}
     private val httpClient = HttpClient(engine) {
+        expectSuccess = false
         install(Logging)
         install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-            })
+            json()
         }
         HttpResponseValidator {
             validateResponse { response ->
-                when (response.status) {
-                    HttpStatusCode.BadRequest -> {
+                when (response.status.value) {
+                    HttpStatusCode.BadRequest.value -> {
                         val message = response.body<InputFieldError>()
-                        throw InputFieldException(Json{ignoreUnknownKeys = true}.encodeToString(message))
+                        throw InputFieldException(inputFieldErrorEncoder.encodeToString(message))
                     }
-                    HttpStatusCode.Conflict -> {
+                    HttpStatusCode.Conflict.value -> {
                         throw UserAlreadyExistsException()
                     }
-                    HttpStatusCode.Unauthorized -> {
+                    HttpStatusCode.Unauthorized.value -> {
                         throw SignInException()
                     }
+                    in 300..399 -> throw RedirectResponseException(response, "")
+                    in 400..499 -> throw ClientRequestException(response, "")
+                    in 500..599 -> throw ServerResponseException(response, "")
                 }
             }
         }
@@ -59,7 +69,7 @@ class AuthClient(
         }
     }
 
-    suspend fun signUp(authRequest: AuthRequest) {
+    suspend fun signUp(authRequest: AuthRequest) = withContext(dispatcher) {
         httpClient.post("signup") {
             contentType(ContentType.Application.Json)
             headers {
@@ -68,7 +78,7 @@ class AuthClient(
             setBody(authRequest)
         }
     }
-    suspend fun signIn(authRequest: AuthRequest) {
+    suspend fun signIn(authRequest: AuthRequest) = withContext(dispatcher) {
         val tokenData = httpClient.post("signin") {
             contentType(ContentType.Application.Json)
             headers {
@@ -76,10 +86,9 @@ class AuthClient(
             }
             setBody(authRequest)
         }.body<TokenData>()
-        println("Received tokens: $tokenData")
         tokensManager.saveTokenData(tokenData)
     }
-    suspend fun logOut() {
+    suspend fun logOut() = withContext(dispatcher) {
         httpClient.post("logout")
         tokensManager.clearTokenData()
     }

@@ -12,9 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -34,7 +35,7 @@ fun AuthTextField(
     authFieldType: AuthFieldType,
     onValueChange: (String) -> Unit
 ) {
-    var showPassword by remember {
+    var showPassword by rememberSaveable {
         mutableStateOf(false)
     }
     val maxFieldLength = integerResource(id = R.integer.max_auth_field_length)
@@ -62,7 +63,9 @@ fun AuthTextField(
                 }
             }
         },
-        modifier = Modifier.fillMaxWidth())
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(authFieldType.toString()))
 }
 
 @Preview

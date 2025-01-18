@@ -8,14 +8,14 @@ import org.koin.dsl.module
 import java.util.Locale
 
 val authModule = module {
-    factory {
+    single {
         AuthClient(
             engine = CIO.create(),
             tokensManager = get(),
             locale = Locale.getDefault()
         )
     }
-    factory {
+    single {
         AuthRepository(authClient = get())
     }
     factory {

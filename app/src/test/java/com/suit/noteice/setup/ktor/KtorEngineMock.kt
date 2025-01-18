@@ -10,7 +10,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * @param content content to be encoded to string by the mock
+ * @param content return content to be encoded to string by the mock
  */
 inline fun <reified T> mockKtorEngine(
     content: T,

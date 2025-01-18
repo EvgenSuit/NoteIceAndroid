@@ -4,7 +4,8 @@ import com.suit.noteice.setup.DispatcherRule
 import com.suit.noteice.setup.ktor.mockKtorEngine
 import com.suit.noteice.setup.notes.NotesClientConstants
 import com.suit.noteice.setup.notes.mockNotesClient
-import com.suit.noteice.setup.notes.mockTokensManager
+import com.suit.noteice.setup.auth.mockTokensManager
+import com.suit.noteice.utils.notes.data.TokenData
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
@@ -39,7 +40,7 @@ class NotesClientTests {
 
     @Test
     fun getNotes_savedTokensNull_noRequestPerformed() = runTest {
-        val tokensManager = mockTokensManager(null)
+        val tokensManager = mockTokensManager(TokenData())
         setup(
             inputTokensManager = tokensManager
         )
@@ -61,6 +62,7 @@ class NotesClientTests {
         )
         assertFailsWith<TokenRefreshFailed> { notesClient.getNotes() }
         coVerify(exactly = 2) { tokensManager.getSavedTokenData() }
+        coVerify { tokensManager.clearTokenData() }
     }
 
     @Test

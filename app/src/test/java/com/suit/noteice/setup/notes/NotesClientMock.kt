@@ -1,6 +1,7 @@
 package com.suit.noteice.setup.notes
 
 import com.suit.noteice.features.notes.data.Note
+import com.suit.noteice.setup.auth.mockTokensManager
 import com.suit.noteice.setup.ktor.mockKtorEngine
 import com.suit.noteice.utils.notes.NotesClient
 import com.suit.noteice.utils.notes.TokensManager

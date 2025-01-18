@@ -10,7 +10,7 @@
     <string name="sign_up">Sign Up</string>
     <string name="do_not_have_account">Don\'t have an account?</string>
     <string name="go_to_signup">Go to Sign Up</string>
-    <string name="check_your_inbox">Verification email sent. Check your inbox</string>
+    <string name="email_confirmation">Verification email sent. Check your inbox</string>
     <string name="could_not_sign_up">Could not sign up</string>
     <string name="user_already_exists">Invalid login or password</string>
 

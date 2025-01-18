@@ -11,10 +11,10 @@ import com.suit.noteice.utils.ktor.InputFieldError
 import com.suit.noteice.utils.ktor.InputFieldException
 import com.suit.noteice.utils.ui.AuthUIEvent
 import com.suit.noteice.utils.ui.UIText
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -22,11 +22,12 @@ import kotlinx.serialization.json.Json
 class AuthViewModel(
     private val authRepository: AuthRepository
 ): ViewModel() {
+    private val inputErrorEncoder = Json {ignoreUnknownKeys = true}
     private val _uiState = MutableStateFlow(AuthUIState())
     val uiState = _uiState.asStateFlow()
 
-    private val _uiEvents = MutableSharedFlow<AuthUIEvent>()
-    val uiEvents = _uiEvents.asSharedFlow()
+    private val _uiEvents = Channel<AuthUIEvent>()
+    val uiEvents = _uiEvents.receiveAsFlow()
 
     fun handleIntent(intent: AuthIntent) {
         when (intent) {
@@ -48,15 +49,14 @@ class AuthViewModel(
             try {
                 authRepository.signUp(email, password)
                 handleIntent(AuthIntent.ChangeAuthType)
-                _uiEvents.emit(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.check_your_inbox)))
+                _uiEvents.send(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.email_confirmation)))
                 updateAuthResult(CustomResult.Success)
             } catch (e: Exception) {
-                println(e)
                 when (e) {
                     is InputFieldException ->
-                        _uiState.update { it.copy(inputError = Json{ignoreUnknownKeys = true}.decodeFromString(e.message!!)) }
-                    is UserAlreadyExistsException -> _uiEvents.emit(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.user_already_exists)))
-                    else -> _uiEvents.emit(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.could_not_sign_up)))
+                        _uiState.update { it.copy(inputError = inputErrorEncoder.decodeFromString(e.message!!)) }
+                    is UserAlreadyExistsException -> _uiEvents.send(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.user_already_exists)))
+                    else -> _uiEvents.send(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.could_not_sign_up)))
                 }
                 updateAuthResult(CustomResult.Error)
             }
@@ -70,14 +70,13 @@ class AuthViewModel(
             try {
                 authRepository.signIn(email, password)
                 updateAuthResult(CustomResult.Success)
-                _uiEvents.emit(AuthUIEvent.NavigateToNotesScreen)
+                _uiEvents.send(AuthUIEvent.NavigateToNotesScreen)
             } catch (e: Exception) {
-                println(e)
                 when (e) {
                     is InputFieldException ->
-                        _uiState.update { it.copy(inputError = Json{ignoreUnknownKeys = true}.decodeFromString(e.message!!)) }
-                    is SignInException -> _uiEvents.emit(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.could_not_sign_in_check_credentials)))
-                    else -> _uiEvents.emit(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.could_not_sign_in)))
+                        _uiState.update { it.copy(inputError = inputErrorEncoder.decodeFromString(e.message!!)) }
+                    is SignInException -> _uiEvents.send(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.could_not_sign_in_check_credentials)))
+                    else -> _uiEvents.send(AuthUIEvent.ShowSnackbar(UIText.StringResource(R.string.could_not_sign_in)))
                 }
                 updateAuthResult(CustomResult.Error)
             }

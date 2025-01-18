@@ -39,7 +39,7 @@ class NotesClient(
             })
         }
         defaultRequest {
-            url("${KtorConstants.BASE_AUTH_URL}/refresh")
+            url("${KtorConstants.BASE_AUTH_URL}refresh")
         }
     }
 
@@ -76,6 +76,7 @@ class NotesClient(
                         append("Authorization", "Bearer ${newTokens.accessToken!!}")
                     }
                 } catch (e: Exception) {
+                    // clear tokens so that no network requests will be performed the next time a user enters the app while having invalid tokens
                     tokensManager.clearTokenData()
                     throw TokenRefreshFailed("Token refresh failed: ${e.message}")
                 }

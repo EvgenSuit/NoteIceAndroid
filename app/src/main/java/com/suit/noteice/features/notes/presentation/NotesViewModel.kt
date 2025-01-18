@@ -7,10 +7,10 @@ import com.suit.noteice.features.notes.domain.NotesRepository
 import com.suit.noteice.utils.CustomResult
 import com.suit.noteice.utils.notes.TokenRefreshFailed
 import com.suit.noteice.utils.ui.NotesUIEvent
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -20,8 +20,8 @@ class NotesViewModel(
     private val _uiState = MutableStateFlow(NotesUIState())
     val uiState = _uiState.asStateFlow()
 
-    private val _uiEvent = MutableSharedFlow<NotesUIEvent>()
-    val uiEvent = _uiEvent.asSharedFlow()
+    private val _uiEvent = Channel<NotesUIEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
         fetchNotes()
@@ -39,16 +39,15 @@ class NotesViewModel(
             try {
                 val notes = notesRepository.fetchNotes()
                 if (notes == null) {
-                    _uiEvent.emit(NotesUIEvent.NavigateToAuth)
+                    _uiEvent.send(NotesUIEvent.NavigateToAuth)
                     updateNotesFetchResult(CustomResult.None)
                     return@launch
                 }
                 _uiState.update { it.copy(notes) }
                 updateNotesFetchResult(CustomResult.Success)
             } catch (e: Exception) {
-                println(e)
                 if (e is TokenRefreshFailed) {
-                    _uiEvent.emit(NotesUIEvent.NavigateToAuth)
+                    _uiEvent.send(NotesUIEvent.NavigateToAuth)
                     updateNotesFetchResult(CustomResult.None)
                     return@launch
                 }
