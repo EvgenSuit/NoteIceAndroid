@@ -16,4 +16,15 @@
 
     <string name="could_not_sign_in_check_credentials">Could not sign in. Check your credentials and try again</string>
     <string name="could_not_sign_in">Could not sign in</string>
+
+    <string name="note_title_placeholder">Title</string>
+    <string name="note_content_placeholder">Content</string>
+    <string name="last_time_modified">Last time modified:</string>
+    <string name="today">Today</string>
+    <string name="save_note">Save</string>
+    <string name="could_not_save_note">Could not save note</string>
+    <string name="could_not_delete_notes">Could not delete notes</string>
+    <string name="no_notes">Click on + to create a note</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

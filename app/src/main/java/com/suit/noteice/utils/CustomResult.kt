@@ -6,3 +6,5 @@ sealed class CustomResult {
     data object Success: CustomResult()
     data object Error: CustomResult()
 }
+
+fun CustomResult.isInProgress() = this is CustomResult.InProgress

@@ -7,6 +7,7 @@ import io.ktor.client.engine.cio.CIO
 import org.koin.dsl.module
 import java.util.Locale
 
+
 val authModule = module {
     single {
         AuthClient(

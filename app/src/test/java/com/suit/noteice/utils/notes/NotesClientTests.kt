@@ -60,7 +60,7 @@ class NotesClientTests {
                 status = HttpStatusCode.Unauthorized
             )
         )
-        assertFailsWith<TokenRefreshFailed> { notesClient.getNotes() }
+        assertFailsWith<UnauthorizedException> { notesClient.getNotes() }
         coVerify(exactly = 2) { tokensManager.getSavedTokenData() }
         coVerify { tokensManager.clearTokenData() }
     }

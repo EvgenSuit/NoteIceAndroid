@@ -1,6 +1,8 @@
 package com.suit.noteice.utils.notes
 
 import com.suit.noteice.features.notes.data.Note
+import com.suit.noteice.features.notes.data.NoteRequest
+import com.suit.noteice.features.notes.data.NotesDeletionRequest
 import com.suit.noteice.utils.ktor.KtorConstants
 import com.suit.noteice.utils.notes.data.RefreshTokenRequest
 import com.suit.noteice.utils.notes.data.TokenData
@@ -12,9 +14,11 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.plugin
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -57,6 +61,7 @@ class NotesClient(
     }
 
     init {
+        // bearer token gets appended in every request sent to the server during interception
         notesHttpClient.plugin(HttpSend).intercept { request ->
             val tokens = tokensManager.getSavedTokenData()
 
@@ -78,11 +83,33 @@ class NotesClient(
                 } catch (e: Exception) {
                     // clear tokens so that no network requests will be performed the next time a user enters the app while having invalid tokens
                     tokensManager.clearTokenData()
-                    throw TokenRefreshFailed("Token refresh failed: ${e.message}")
+                    throw UnauthorizedException("Token refresh failed: ${e.message}")
                 }
-                execute(request)
+                val newCall = execute(request)
+                if (newCall.response.status.value == 401) throw UnauthorizedException("Unauthorized")
+                newCall
             } else originalCall
         }
+    }
+
+    suspend fun deleteNotes(notesDeletionRequest: NotesDeletionRequest) = withContext(dispatcher) {
+        notesHttpClient.delete("delete") {
+            setBody(notesDeletionRequest)
+            contentType(ContentType.Application.Json)
+        }
+    }
+
+    suspend fun editNote(id: Long, noteRequest: NoteRequest) = withContext(dispatcher) {
+        notesHttpClient.put("$id") {
+            setBody(noteRequest)
+            contentType(ContentType.Application.Json)
+        }.body<Note>()
+    }
+    suspend fun saveNote(noteRequest: NoteRequest) = withContext(dispatcher) {
+        notesHttpClient.post("") {
+            setBody(noteRequest)
+            contentType(ContentType.Application.Json)
+        }.body<Note>()
     }
 
     suspend fun getNotes(): List<Note>? = withContext(dispatcher) {

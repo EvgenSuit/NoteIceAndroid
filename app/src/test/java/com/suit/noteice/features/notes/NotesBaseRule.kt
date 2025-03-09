@@ -1,12 +1,15 @@
 package com.suit.noteice.features.notes
 
+import com.suit.noteice.features.notes.domain.NoteTimeFormatter
 import com.suit.noteice.features.notes.domain.NotesRepository
 import com.suit.noteice.features.notes.presentation.NotesViewModel
 import com.suit.noteice.setup.notes.mockNotesClient
 import com.suit.noteice.utils.notes.NotesClient
 import com.suit.noteice.utils.notes.TokensManager
+import com.suit.noteice.utils.time.TestClock
 import com.suit.noteice.utils.ui.NotesUIEvent
 import io.ktor.client.engine.mock.MockEngine
+import io.mockk.mockk
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -15,8 +18,10 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import java.util.Locale
 
 class NotesBaseRule: TestWatcher() {
+    val testClock = TestClock()
     val testDispatcher = StandardTestDispatcher()
     lateinit var viewModel: NotesViewModel
     lateinit var notesRepository: NotesRepository
@@ -46,7 +51,10 @@ class NotesBaseRule: TestWatcher() {
 
     fun setupViewModel() {
         viewModel = NotesViewModel(
-            notesRepository = notesRepository
+            notesRepository = notesRepository,
+            noteTimeFormatter = NoteTimeFormatter(locale = Locale.getDefault(), clock = testClock,
+                resources = mockk(relaxed = true)
+            )
         )
     }
 

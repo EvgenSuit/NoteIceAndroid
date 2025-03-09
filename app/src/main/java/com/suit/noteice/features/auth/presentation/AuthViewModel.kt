@@ -72,6 +72,7 @@ class AuthViewModel(
                 updateAuthResult(CustomResult.Success)
                 _uiEvents.send(AuthUIEvent.NavigateToNotesScreen)
             } catch (e: Exception) {
+                println(e)
                 when (e) {
                     is InputFieldException ->
                         _uiState.update { it.copy(inputError = inputErrorEncoder.decodeFromString(e.message!!)) }
